@@ -4,17 +4,6 @@ import java.util.Scanner;
 
 public class ShortestPath {
        
-    public static class Node {
-	int id; // identify each node by its id
-	double distance; // store the min distance
-
-	//public Node(int id, double distance) {
-	   // this.id = id;
-	   // this.distance = distance;
-	//}
-
-    }
-    
     /*
      * 
      */
@@ -30,6 +19,11 @@ public class ShortestPath {
 	}	
     }
     
+    public static class Node {
+	int id; // identify each node by its id
+	double distance; // store the min distance
+    }
+	
     /*
      * Create a digraph with weighted edges
      */
@@ -62,30 +56,33 @@ public class ShortestPath {
 	    for (int i=0; i<nodes; i++) {
 		heapNodes[i] = new Node();
 		heapNodes[i].id = i;
-		heapNodes[i].distance = INFINITY;
-		
+		heapNodes[i].distance = INFINITY;		
 	    }
 	    
 	    // initialize the source node's distance to 0
 	    heapNodes[source].distance = 0;
 	    
-	    // insert the nodes to the MinHeap
-	    MinHeap minHeap = new MinHeap(nodes);
+	    // insert the nodes to the priority queue
+	    MinPriorityQueue mpq = new MinPriorityQueue(nodes);
 	    for (int i=0; i<nodes; i++) {
-		minHeap.insert(heapNodes[i]);
+		mpq.insert(heapNodes[i]);
 	    }
 	    
 	    //printDijkstra(heapNodes, source);
 
 	}
-	    public void printDijkstra(Node[] heapNodes, int source) {
-		for (int i = 0; i<nodes; i++) {
-		    System.out.println("Source: "+ source + " to vertex "+ i +
-			    " distance: " + heapNodes[i].distance);
-		}
-	    }
-
 	
+	/*
+	 * Print the shortest s-t path from s to t
+	 */
+	public void printDijkstra(Node[] heapNodes, int source) {
+	    for (int i = 0; i<nodes; i++) {
+		System.out.println("Source: "+ source + " to vertex "+ i +
+			" distance: " + heapNodes[i].distance);
+	    }
+	}
+
+	// Output the edge list
 	public void printGraph() {
 	    for (int i =0; i<nodes; i++) {
 		LinkedList<Edge> list = adjacencyList[i];
@@ -97,20 +94,20 @@ public class ShortestPath {
 	}
     }
     
-    public static class MinHeap{
-	int size;
-	int currentSize;
+    public static class MinPriorityQueue{
+	private int maxSize;
+	private int heapSize;
 	Node[] node;
-	int[] indexes; // decrease pi value
+	int[] minHeap; // use indexed priority queue to store the shortest distance
 	
-	public MinHeap(int size) {
-	    this.size = size;
-	    currentSize = 0;
-	    node = new Node[size + 1];
+	public MinPriorityQueue(int maxSize) {
+	    this.maxSize = maxSize;
+	    this.heapSize = 0;
+	    node = new Node[maxSize + 1];
 	    node[0] = new Node();
 	    node[0].distance = Integer.MIN_VALUE;
 	    node[0].id = -1;
-	    indexes = new int[size];   
+	    minHeap = new int[maxSize];   
 	    
 	}
 	
@@ -123,13 +120,48 @@ public class ShortestPath {
 	    node[n2] = temp;
 	}
 	
+	public int heapSize() {
+	    return heapSize;
+	}
+	
 	public void insert(Node n) {
-	    currentSize++;
-	    int index = currentSize;
+	    heapSize++;
+	    int index = heapSize;
 	    node[index] = n;
-	    indexes[n.id] = index;
+	    minHeap[n.id] = index;
 	    heapify(index);
 	}
+	
+	// Get the left child of a node
+	private int getLeftChild(int idx) {
+	    return 2*idx;
+	}
+	
+	// Get the right child of a node
+	private int getRightChild(int idx) {
+	    return 2*idx + 1;
+	}
+	
+	// Get the parent of a node
+	private int getParent(int idx) {
+	    return idx/2;
+	}
+	
+	public void minHeapify(int idx) {
+	    int leftChildIdx = getLeftChild(idx);
+	    int rightChildIdx = getRightChild(idx);
+	    int smallest = idx;
+	    
+	    // find the smallest 
+	    if (leftChildIdx < heapSize() && node[smallest].distance > node[leftChildIdx].distance) {
+		smallest = leftChildIdx;
+	    }
+	    if (rightChildIdx < heapSize() && node[smallest].distance > node[rightChildIdx].distance) {
+		smallest = rightChildIdx;
+	    }
+	    
+	}
+	
 	
 	public void heapify(int idx) {
 	    int parentIdx = idx/2;
@@ -138,13 +170,27 @@ public class ShortestPath {
 		Node parentNode = node[parentIdx];
 		Node currentNode = node[currentIdx];
 		
-		indexes[parentNode.id] = currentIdx;
-		indexes[currentNode.id] = parentIdx;
+		minHeap[parentNode.id] = currentIdx;
+		minHeap[currentNode.id] = parentIdx;
 
 		swapNode(parentIdx, currentIdx);
 		currentIdx = parentIdx;
 		parentIdx = parentIdx/2;
+		System.out.println("Parent node: " + minHeap[parentNode.id]
+			+ ", Current node: "+ minHeap[currentNode.id]);
 	    }
+	    System.out.println("Parent node " + node[parentIdx].id + "'s distance:" + node[parentIdx].distance +
+		    ", Current node " + node[currentIdx].id +"'s distance: " + node[currentIdx].distance);
+
+	}
+	
+	public Node extractMin() {
+	    Node min = node[1];
+	    Node lastNode = node[heapSize];
+	    minHeap[lastNode.id] = 1; // move min to the last position
+	    node[1] = lastNode; // move the last node to top
+	    node[heapSize] = null;
+	    return null;
 	}
 	
 
