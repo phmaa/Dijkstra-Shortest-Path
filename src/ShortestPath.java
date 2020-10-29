@@ -51,7 +51,7 @@ public class ShortestPath {
 	    // track which nodes have already been visited
 	    boolean[] visited = new boolean[nodes];
 	    
-	    // create heap nodes for all the vertices
+	    // A distance array of heapNodes initialized to infinity
 	    Node[] heapNodes = new Node[nodes];
 	    for (int i=0; i<nodes; i++) {
 		heapNodes[i] = new Node();
@@ -60,18 +60,49 @@ public class ShortestPath {
 	    }
 	    
 	    // initialize the source node's distance to 0
-	    heapNodes[source].distance = 0;
+	    heapNodes[source].distance = 0.;
 	    
-	    // insert the nodes to the priority queue
-	    MinPriorityQueue mpq = new MinPriorityQueue(nodes);
+	    // Build a min heap priority queue
+	    MinHeapPQ mpq = new MinHeapPQ(nodes);
 	    for (int i=0; i<nodes; i++) {
-		mpq.insert(heapNodes[i]);
+		//mpq.insert(heapNodes[i]);
+		mpq.buildMinHeap(heapNodes[i]);
 	    }
 	    
-	    //printDijkstra(heapNodes, source);
+	    while (mpq.heapSize > 0) {
+		Node extractedNode = mpq.extractMin(); // extract min
+		
+		// extract the node
+		int nodeId = extractedNode.id;
+		visited[nodeId] = true;
+		
+		LinkedList<Edge> list = adjacencyList[nodeId];
+		for (int i = 0; i<list.size(); i++) {
+		    Edge edge = list.get(i);
+		    int to = edge.to;
+		    if (visited[to] == false) {
+			double newKey = heapNodes[nodeId].distance + edge.weight;
+			double currentKey = heapNodes[to].distance;
+			if (currentKey>newKey) {
+			    decreaseKey(mpq, to, newKey);
+			    heapNodes[to].distance = newKey;
+			}
+			
+		    }
+		}
+	    }
+	    
+	    printDijkstra(heapNodes, source);
 
 	}
 	
+	public void decreaseKey(MinHeapPQ minPQ, int index, double newKey) {
+	    // index of the node whose distance needs decrease
+	    int vertex = minPQ.minHeap[index];
+	    Node node = minPQ.node[index];
+	    node.distance = newKey;
+	    minPQ.heapify(vertex);
+	}
 	/*
 	 * Print the shortest s-t path from s to t
 	 */
@@ -94,15 +125,15 @@ public class ShortestPath {
 	}
     }
     
-    public static class MinPriorityQueue{
+    public static class MinHeapPQ{
 	private int maxSize;
-	private int heapSize;
+	private int heapSize;	
 	Node[] node;
-	int[] minHeap; // use indexed priority queue to store the shortest distance
+	int[] minHeap; // indexed priority queue
 	
-	public MinPriorityQueue(int maxSize) {
+	public MinHeapPQ(int maxSize) {
 	    this.maxSize = maxSize;
-	    this.heapSize = 0;
+	    this.heapSize = 0;    // ***should be the size of the nodes
 	    node = new Node[maxSize + 1];
 	    node[0] = new Node();
 	    node[0].distance = Integer.MIN_VALUE;
@@ -124,12 +155,22 @@ public class ShortestPath {
 	    return heapSize;
 	}
 	
+	
 	public void insert(Node n) {
-	    heapSize++;
+	    heapSize++;		// increase heap size by one
 	    int index = heapSize;
 	    node[index] = n;
 	    minHeap[n.id] = index;
 	    heapify(index);
+	}
+	
+	public void buildMinHeap(Node n) {
+	    heapSize++;		// increase heap size by one
+	    int index = heapSize;
+	    node[index] = n;
+	    minHeap[n.id] = index;
+	    minHeapify(index);
+	    	    
 	}
 	
 	// Get the left child of a node
@@ -159,7 +200,20 @@ public class ShortestPath {
 	    if (rightChildIdx < heapSize() && node[smallest].distance > node[rightChildIdx].distance) {
 		smallest = rightChildIdx;
 	    }
-	    
+		//System.out.println("Smallest: " + node[smallest].id);
+	    // smallest is not the node
+	    if (smallest != idx) {
+		Node smallestNode = node[smallest];
+		Node temp = node[idx];
+		
+		// swap
+		minHeap[smallestNode.id] = idx;
+
+		minHeap[temp.id] = smallest;
+		swapNode(idx, smallest);
+		minHeapify(smallest);
+	    }
+
 	}
 	
 	
@@ -185,12 +239,14 @@ public class ShortestPath {
 	}
 	
 	public Node extractMin() {
-	    Node min = node[1];
-	    Node lastNode = node[heapSize];
+	    Node min = node[1]; // store the minimum value
+	    Node lastNode = node[heapSize];   //to make root equal to the last element
 	    minHeap[lastNode.id] = 1; // move min to the last position
 	    node[1] = lastNode; // move the last node to top
 	    node[heapSize] = null;
-	    return null;
+	    minHeapify(1);
+	    heapSize--;
+	    return min;
 	}
 	
 
