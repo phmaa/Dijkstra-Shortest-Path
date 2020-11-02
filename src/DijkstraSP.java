@@ -91,10 +91,11 @@ public class DijkstraSP {
 				LinkedList<Edge> edgeList = adjacencyList[vertexId];
 				for (int i=0; i < edgeList.size();i++) {
 					Edge edge = edgeList.get(i);
+					
 					int destination = edge.destination; // only check the weight of each outgoing edge
 
 					// check the distance to the node that has not been visited
-					if (visited[destination] == false) {
+					if ( !edgeList.isEmpty() && visited[destination] == false) {
 						double newKey = nodes[vertexId].distance + edge.weight;
 						double currentKey = nodes[destination].distance;
 						if (newKey < currentKey) {
