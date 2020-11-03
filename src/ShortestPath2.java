@@ -1,6 +1,6 @@
 /*
- * Based on DijkstratSP.java 6:56 pm 
- * November 02, 2020
+ * Based on DijkstratSP.java  
+ * Updated on November 03, 2020 
  * The goal is to use array index 1
  */
 import java.util.ArrayList;
@@ -86,33 +86,6 @@ public class ShortestPath2 {
 			while (!minHeap.isEmpty()) {
 			    Node vertex = minHeap.ExtractMin();
 			    int vertexId = vertex.id;
-
-			    LinkedList<Edge> edgeList = adjacencyList[vertexId];
-			    for (int i=0; i < edgeList.size();i++) {
-
-				Edge edge = edgeList.get(i);
-
-
-				int destination = edge.destination; // only check the weight of each outgoing edge
-
-				// check the distance to the node that has not been visited
-
-				    double newKey = nodes[vertexId].distance + edge.weight;
-				    double currentKey = nodes[destination].distance;
-				    if (newKey < currentKey) {
-					decreaseKey(minHeap, newKey, destination);  
-					nodes[destination].distance = newKey;  
-					parents[destination] = vertexId; 
-
-				    }
-
-
-			    }
-			}
-			/*
-			while (!minHeap.isEmpty()) {
-			    Node vertex = minHeap.ExtractMin();
-			    int vertexId = vertex.id;
 			    visited[vertexId] = true;
 
 
@@ -129,18 +102,16 @@ public class ShortestPath2 {
 				    double newKey = nodes[vertexId].distance + edge.weight;
 				    double currentKey = nodes[destination].distance;
 				    if (newKey < currentKey) {
-					parents[destination] = edge.source; 
+					parents[destination] = vertexId; 
 					decreaseKey(minHeap, newKey, destination);  
 					nodes[destination].distance = newKey;  
 
 				    }
 
 				}
-
-
 			    }
 			}
-			*/
+
 
 			printDijkstra(nodes, source, parents);
 		}
@@ -202,6 +173,10 @@ public class ShortestPath2 {
 		public boolean isEmpty() {	    	
 			return size == 0;
 		}
+		
+		public int heapSize() {
+			return size;
+		}
 
 		// swap the positions of two nodes
 		public void swapNode(int a, int b) {
@@ -219,16 +194,19 @@ public class ShortestPath2 {
 			heapifyUp(currentIndex);
 		}
 
-		public void heapifyUp(int currentIndex) {
-			while (hasParent(currentIndex) && 
-					heapNodes[getParent(currentIndex)].distance > heapNodes[currentIndex].distance) {
+		public void heapifyUp(int index) {
+			int parent = index/2;
+			int currentIndex = index;
+			while (currentIndex >0 && 
+					heapNodes[parent].distance > heapNodes[currentIndex].distance) {
 				Node currentNode = heapNodes[currentIndex];
-				Node parentNode = heapNodes[getParent(currentIndex)];
+				Node parentNode = heapNodes[parent];
 
-				mhPQ[currentNode.id] = getParent(currentIndex);
+				mhPQ[currentNode.id] = parent;
 				mhPQ[parentNode.id] = currentIndex;
-				swapNode(getParent(currentIndex), currentIndex);
-				currentIndex = getParent(currentIndex);
+				swapNode(currentIndex, parent);
+				currentIndex = parent;
+				parent = parent/2;
 			}
 		}
 
@@ -250,23 +228,24 @@ public class ShortestPath2 {
 
 		public void heapifyDown(int index) {
 			int smallest = index; // get the index of the root node
-			while (hasLeftChild(smallest) && heapNodes[smallest].distance > heapNodes[getLeftChild(smallest)].distance) {
-				smallest = getLeftChild(smallest);
-				if (hasRightChild(smallest) && 
-						heapNodes[getRightChild(smallest)].distance < heapNodes[getLeftChild(smallest)].distance) {
-					smallest = getRightChild(smallest);
-				}
+			int leftChild = 2*index;
+			int rightChild = 2*index + 1;
+			
+			if (leftChild < heapSize() && heapNodes[smallest].distance > heapNodes[leftChild].distance) {
+				smallest = leftChild;}
+			
+			if (rightChild < heapSize() && heapNodes[rightChild].distance < heapNodes[leftChild].distance) {
+					smallest = rightChild;
+			}
 
-				if (smallest != index) {
-					Node smallestNode = heapNodes[smallest];
-					Node currentNode = heapNodes[index];
+			if (smallest != index) {
+				Node smallestNode = heapNodes[smallest];
+				Node currentNode = heapNodes[index];
 
-					mhPQ[smallestNode.id] = index;
-					mhPQ[currentNode.id] = smallest;
-					swapNode(index, smallest);
-					index = smallest;
-				}
-
+				mhPQ[smallestNode.id] = index;
+				mhPQ[currentNode.id] = smallest;
+				swapNode(index, smallest);
+				heapifyDown(smallest);
 			}
 		}
 	}
