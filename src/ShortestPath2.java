@@ -1,7 +1,6 @@
 /*
- * Based on DijkstratSP.java  
+ * Final version   
  * Updated on November 03, 2020 
- * The goal is to use array index 1
  */
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -9,6 +8,10 @@ import java.util.List;
 import java.util.Scanner;
 
 public class ShortestPath2 {
+	
+	/*
+	 * Properties of the adjacency list 
+	 */
 	public static class Edge{
 		int source;
 		int destination;
@@ -20,7 +23,11 @@ public class ShortestPath2 {
 			this.weight = weight;
 		}
 	}
-
+	
+	/*
+	 * Each node will store the vertex id and 
+	 * distance from source vertex to the vertex
+	 */
 	public static class Node{
 		int id;
 		double distance;
@@ -54,64 +61,70 @@ public class ShortestPath2 {
 				}
 			}
 		}
-
+		
+		/**
+		 * Compute the shortest distance from the source 
+		 * to every other vertex in the weighted digraph
+		 * @param source
+		 */
 		public void dijkstra(int source) {
 			int INFINITY = Integer.MAX_VALUE;
+			
+			// store vertices for which the best distance from the source has been determined
 			boolean[] visited = new boolean[vertices+1];
-			visited[0] = true;
-			//List<Integer> path = new ArrayList<>(); 
-
-
+			visited[0] = true; // skip vertex 0
+			
+			// track the previous node to reconstruct the path
 			int[] parents = new int[vertices+1]; 
-			parents[0]= -1;
-			parents[source] = -1;
-			// initialize the distance of each node to the max value
+			parents[0]= -1;  // set a sentinel value for vertex 0
+			parents[source] = -1;   // set a sentinel value for source node
+			
+			// initialize each node with an id and set the distance to max value
 			Node[] nodes = new Node[vertices+1];
 			for (int i=0; i<=vertices; i++) {
 				nodes[i] = new Node();
-				nodes[i].id = i;    //_______________
+				nodes[i].id = i;    
 				nodes[i].distance = INFINITY;
 			}
 			nodes[0] = null;
-			nodes[source].distance = 0; // set source node distance to self to 0
+			
+			// set source node distance to self to 0
+			nodes[source].distance = 0; 
 
-
-			// insert nodes to min heap priority queue
+			// insert nodes to min-heap
 			MinHeap minHeap = new MinHeap(vertices);
-			for (int i=1; i<=vertices; i++) {   //++++++++++++++
-			    minHeap.insert(nodes[i]);  
+			for (int i=1; i<=vertices; i++) {   
+				minHeap.insert(nodes[i]);  
 			}
 
 			// find the best d(v) for each edge leaving u
 			while (!minHeap.isEmpty()) {
-			    Node vertex = minHeap.ExtractMin();
-			    int vertexId = vertex.id;
-			    visited[vertexId] = true;
+				Node vertex = minHeap.ExtractMin();
+				int vertexId = vertex.id;
+				
+				// keep track of the vertices that are still in min-heap
+				visited[vertexId] = true;
 
+				LinkedList<Edge> edgeList = adjacencyList[vertexId];
+				for (int i=0; i < edgeList.size();i++) {
 
-			    LinkedList<Edge> edgeList = adjacencyList[vertexId];
-			    for (int i=0; i < edgeList.size();i++) {
+					Edge edge = edgeList.get(i);
 
-				Edge edge = edgeList.get(i);
+					int destination = edge.destination; // only check the weight of each outgoing edge
 
+					// check the distance to the node that has not been visited
+					if ( visited[destination] == false) {
+						double newKey = nodes[vertexId].distance + edge.weight;
+						double currentKey = nodes[destination].distance;
+						if (newKey < currentKey) {
+							parents[destination] = vertexId; 
+							decreaseKey(minHeap, newKey, destination);  
+							nodes[destination].distance = newKey;  
 
-				int destination = edge.destination; // only check the weight of each outgoing edge
-
-				// check the distance to the node that has not been visited
-				if ( visited[destination] == false) {
-				    double newKey = nodes[vertexId].distance + edge.weight;
-				    double currentKey = nodes[destination].distance;
-				    if (newKey < currentKey) {
-					parents[destination] = vertexId; 
-					decreaseKey(minHeap, newKey, destination);  
-					nodes[destination].distance = newKey;  
-
-				    }
-
+						}
+					}
 				}
-			    }
 			}
-
 
 			printDijkstra(nodes, source, parents);
 		}
@@ -122,7 +135,9 @@ public class ShortestPath2 {
 
 			Node node = minHeap.heapNodes[index];
 			node.distance = newKey;
-			minHeap.heapifyUp(index);  // restore the heap order
+			
+			// restore the heap order
+			minHeap.heapifyUp(index);  
 		}
 
 		public void printDijkstra(Node[] nodes, int source, int[] parents) {
@@ -134,13 +149,13 @@ public class ShortestPath2 {
 				System.out.println(" ");
 			}
 		}
-
+		
+		// helper function to print the path
 		private static void printPath(int currentIndex, int[] parents) {
 			if (currentIndex == -1) {return;}
 			printPath(parents[currentIndex], parents);
 			System.out.print(currentIndex + " ");
 		}
-
 	}
 
 	public static class MinHeap{
@@ -160,20 +175,11 @@ public class ShortestPath2 {
 			heapNodes[0].distance = Integer.MIN_VALUE;	    
 		}
 
-		// helper functions that find return parent & child positions and return their indices
-		int getLeftChild(int parentIndex) {return parentIndex*2 ;}
-		int getRightChild(int parentIndex) {return parentIndex*2 + 1 ;}
-		int getParent(int childIndex) { return (childIndex)/2 ; }
-
-		boolean hasLeftChild(int parentIndex) { return getLeftChild(parentIndex) < size;}
-		boolean hasRightChild(int parentIndex) { return getRightChild(parentIndex) < size;}
-		boolean hasParent(int childIndex) { return getParent(childIndex) > 0;}	
-
-		// return the current size of min heap
+		// helper functions to check the current size of min-heap
 		public boolean isEmpty() {	    	
 			return size == 0;
 		}
-		
+
 		public int heapSize() {
 			return size;
 		}
@@ -210,9 +216,9 @@ public class ShortestPath2 {
 			}
 		}
 
-		/**
-		 * 
-		 * @return root node
+		/*
+		 * Extract the min mode from the heap and 
+		 * maintain the heap order
 		 */
 		public Node ExtractMin(){
 			Node min = heapNodes[1];
@@ -230,12 +236,12 @@ public class ShortestPath2 {
 			int smallest = index; // get the index of the root node
 			int leftChild = 2*index;
 			int rightChild = 2*index + 1;
-			
+
 			if (leftChild < heapSize() && heapNodes[smallest].distance > heapNodes[leftChild].distance) {
 				smallest = leftChild;}
-			
+
 			if (rightChild < heapSize() && heapNodes[rightChild].distance < heapNodes[leftChild].distance) {
-					smallest = rightChild;
+				smallest = rightChild;
 			}
 
 			if (smallest != index) {
@@ -267,14 +273,16 @@ public class ShortestPath2 {
 			int from = Integer.parseInt(s[0]);
 			int to = Integer.parseInt(s[1]);
 			double w = Double.parseDouble(s[2]);
-			graph.addEdge(from, to, w);		// populate edges for the original graph
+			
+			// populate edges for the original graph
+			graph.addEdge(from, to, w);		
 		}
 
 		sc1.close();
 		sc2.close();
 		int source = 1;
 		graph.dijkstra(source);
-		//graph.printGraph();
+
 	}
 
 }
