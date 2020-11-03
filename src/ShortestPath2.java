@@ -2,9 +2,7 @@
  * Final version   
  * Updated on November 03, 2020 
  */
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Scanner;
 
 public class ShortestPath2 {
