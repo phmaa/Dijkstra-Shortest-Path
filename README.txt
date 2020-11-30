@@ -11,7 +11,7 @@ Files included with this projct:
 Description
 -----------
 This program will implement Dijkstra's Algorithm for finding Single Source Shortest Paths in order of
-O((V+E)lgV) time. It uses the Adjacency List Representation to store and process a directed weighted graph.
+O(V+E) time. It uses the Adjacency List Representation to store and process a directed weighted graph.
 
 
 -----------
