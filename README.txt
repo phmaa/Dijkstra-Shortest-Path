@@ -1,8 +1,5 @@
-CSCI 6410 Fall 2020 Assignment 5
+Assignment 5
 Implementation of Dijkstra's Algorithm for finding Shortest Paths
-
-Author: Hwey-Nan Maa
-Email: maah20@students.ecu.edu
 
 Date: November 3, 2020
 
