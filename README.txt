@@ -1,11 +1,4 @@
-Assignment 5
 Implementation of Dijkstra's Algorithm for finding Shortest Paths
-
-Date: November 3, 2020
-
-Files included with this projct:
-    GraphRev.java	README.txt
-
 
 -----------
 Description
